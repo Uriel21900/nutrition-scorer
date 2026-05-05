@@ -53,36 +53,51 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let currentScore = 10;
-        let macroPenalty = 0;
         let badPenalty = 0;
         let unhealthyPenalty = 0;
 
         // 2. Macro Calculation
         const calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
-        const calorieDiff = Math.abs(calculatedCalories - calories);
+        const effectiveCalories = Math.max(calories, calculatedCalories, 1);
         
-        let macroMessage = `Calculated macros yield ~${Math.round(calculatedCalories)} kcal vs stated ${calories} kcal.`;
-        let macroColor = 'neutral'; // default blue
-        let macroBarWidth = '100%';
+        let baseScore = 5;
+        let macroMessage = "";
 
-        // If stated calories differ by more than 20%, deduct points (indicates hidden macros or alcohol/sugar alcohols not accounted for properly)
-        if (calories > 0 && (calorieDiff / calories) > 0.2) {
-            macroPenalty = 2;
-            macroMessage += " Significant deviation detected (-2 pts).";
-            macroColor = 'danger';
-            macroBarWidth = '80%';
-        } else if (calories > 0 && (calorieDiff / calories) > 0.1) {
-            macroPenalty = 1;
-            macroMessage += " Minor deviation detected (-1 pt).";
-            macroColor = 'warning';
-            macroBarWidth = '90%';
+        const proteinRatio = (protein * 4) / effectiveCalories;
+        const carbRatio = (carbs * 4) / effectiveCalories;
+
+        if (proteinRatio >= 0.3) {
+            baseScore += 4;
+            macroMessage += "Excellent protein (+4). ";
+        } else if (proteinRatio >= 0.15) {
+            baseScore += 2;
+            macroMessage += "Good protein (+2). ";
         } else {
-            macroMessage += " Macros perfectly match stated calories.";
-            macroColor = 'accent'; // green
+            macroMessage += "Low protein (+0). ";
         }
 
-        currentScore -= macroPenalty;
+        if (calories > 0 && calories < 50 && protein > 0) {
+            baseScore += 3;
+            macroMessage += "Nutrient-dense & low calorie (+3). ";
+        } else if (carbRatio < 0.2) {
+            baseScore += 1;
+            macroMessage += "Low carbs (+1). ";
+        } else if (carbRatio > 0.6) {
+            baseScore -= 1;
+            macroMessage += "High carbs (-1). ";
+        }
+
+        const hasSugar = ingredientsText.includes("sugar") || ingredientsText.includes("syrup");
+        if (carbRatio > 0.4 && hasSugar) {
+            baseScore -= 2;
+            macroMessage += "High simple carbs/sugar (-2). ";
+        }
+
+        baseScore = Math.max(1, Math.min(10, baseScore));
+        let currentScore = baseScore;
+
+        let macroColor = baseScore >= 8 ? 'accent' : (baseScore >= 5 ? 'warning' : 'danger');
+        let macroBarWidth = `${(baseScore / 10) * 100}%`;
 
         // 3. Ingredients Scanning
         const foundBad = [];
@@ -112,10 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalScore = Math.max(1, Math.min(10, currentScore));
 
         // 4. Update UI
-        updateUI(finalScore, macroPenalty, macroMessage, macroColor, macroBarWidth, foundBad, foundUnhealthy, badPenalty, unhealthyPenalty);
+        updateUI(finalScore, baseScore, macroMessage, macroColor, macroBarWidth, foundBad, foundUnhealthy, badPenalty, unhealthyPenalty);
     }
 
-    function updateUI(score, macroPenalty, macroMessage, macroColor, macroBarWidth, badList, unhealthyList, badPenalty, unhealthyPenalty) {
+    function updateUI(score, baseScore, macroMessage, macroColor, macroBarWidth, badList, unhealthyList, badPenalty, unhealthyPenalty) {
         // Hide input, show results
         inputPanel.style.display = 'none';
         resultsPanel.style.display = 'block';
@@ -170,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const macroDetails = document.getElementById('macro-details');
         const macroBar = document.getElementById('macro-bar');
 
-        macroScoreBadge.innerText = `Base: 10 (-${macroPenalty} pts)`;
+        macroScoreBadge.innerText = `Macro Base: ${baseScore}/10`;
         macroScoreBadge.className = `badge ${macroColor}`;
         macroDetails.innerText = macroMessage;
         
