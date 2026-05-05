@@ -5,7 +5,7 @@
   "description": "Smart Nutrition Analyzer",
   "start_url": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": ["window-controls-overlay", "tabbed", "standalone", "minimal-ui"],
   "background_color": "#0f172a",
   "theme_color": "#3b82f6",
   "orientation": "portrait",
@@ -62,7 +62,7 @@
       "short_name": "Scan",
       "description": "Scan a new food product",
       "url": "./?action=scan",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }]
     }
   ],
   "launch_handler": {
@@ -94,6 +94,24 @@
         "image/jpeg": [".jpg", ".jpeg"],
         "image/png": [".png"]
       }
+    }
+  ],
+  "note_taking": {
+    "new_note_url": "./?action=note"
+  },
+  "widgets": [
+    {
+      "name": "Nutrition Stats",
+      "description": "Quick view of your stats",
+      "tag": "stats",
+      "ms_ac_template": "./widget.json",
+      "data": "./widget-data.json",
+      "type": "application/json"
+    }
+  ],
+  "scope_extensions": [
+    {
+      "origin": "*.github.io"
     }
   ]
 }

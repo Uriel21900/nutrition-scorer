@@ -19,3 +19,16 @@ self.addEventListener('fetch', (e) => {
         caches.match(e.request).then((response) => response || fetch(e.request))
     );
 });
+
+// PWABuilder advanced feature stubs
+self.addEventListener('push', (e) => {
+    console.log('Push received');
+});
+
+self.addEventListener('sync', (e) => {
+    console.log('Background sync');
+});
+
+self.addEventListener('periodicsync', (e) => {
+    console.log('Periodic background sync');
+});
