@@ -5,7 +5,7 @@
   "description": "Smart Nutrition Analyzer",
   "start_url": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "tabbed", "standalone", "minimal-ui"],
+  "display_override": ["tabbed", "window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#0f172a",
   "theme_color": "#3b82f6",
   "orientation": "portrait",
@@ -14,7 +14,13 @@
   "dir": "ltr",
   "scope": "./",
   "prefer_related_applications": false,
-  "related_applications": [],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.uriel21900.nutriscore",
+      "id": "com.uriel21900.nutriscore"
+    }
+  ],
   "iarc_rating_id": "e84b072d-253a-445e-a322-0a12050119b4",
   "icons": [
     {
@@ -111,7 +117,13 @@
   ],
   "scope_extensions": [
     {
-      "origin": "*.github.io"
+      "origin": "https://*.github.io"
     }
-  ]
+  ],
+  "tab_strip": {
+    "home_tab": {
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}],
+      "visibility": "auto"
+    }
+  }
 }
