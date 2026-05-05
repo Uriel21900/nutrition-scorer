@@ -37,19 +37,28 @@ document.addEventListener('DOMContentLoaded', () => {
         'corn syrup'
     ];
 
+    const lookupBtn = document.getElementById('lookup-btn');
+    const scanBtn = document.getElementById('scan-btn');
+    const barcodeInput = document.getElementById('barcode-input');
+    const barcodeStatus = document.getElementById('barcode-status');
+    let html5QrCode;
+
     calculateBtn.addEventListener('click', calculateScore);
     resetBtn.addEventListener('click', resetApp);
+    lookupBtn.addEventListener('click', () => fetchProduct(barcodeInput.value));
+    scanBtn.addEventListener('click', toggleScanner);
 
     function calculateScore() {
         // 1. Get Inputs
         const calories = parseFloat(document.getElementById('calories').value);
         const protein = parseFloat(document.getElementById('protein').value);
         const carbs = parseFloat(document.getElementById('carbs').value);
+        const fiber = parseFloat(document.getElementById('fiber').value) || 0;
         const fat = parseFloat(document.getElementById('fat').value);
         const ingredientsText = document.getElementById('ingredients').value.toLowerCase();
 
         if (isNaN(calories) || isNaN(protein) || isNaN(carbs) || isNaN(fat)) {
-            alert("Please enter valid numbers for all nutrition facts.");
+            alert("Please enter valid numbers for core nutrition facts.");
             return;
         }
 
@@ -57,14 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let unhealthyPenalty = 0;
 
         // 2. Macro Calculation
-        const calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
+        const netCarbs = Math.max(0, carbs - fiber);
+        const calculatedCalories = (protein * 4) + (netCarbs * 4) + (fat * 9);
         const effectiveCalories = Math.max(calories, calculatedCalories, 1);
         
         let baseScore = 5;
         let macroMessage = "";
 
         const proteinRatio = (protein * 4) / effectiveCalories;
-        const carbRatio = (carbs * 4) / effectiveCalories;
+        const carbRatio = (netCarbs * 4) / effectiveCalories;
 
         if (proteinRatio >= 0.3) {
             baseScore += 4;
@@ -76,15 +86,24 @@ document.addEventListener('DOMContentLoaded', () => {
             macroMessage += "Low protein (+0). ";
         }
 
+        // Reward Fiber
+        if (fiber > 5) {
+            baseScore += 2;
+            macroMessage += "High fiber (+2). ";
+        } else if (fiber >= 3) {
+            baseScore += 1;
+            macroMessage += "Good fiber (+1). ";
+        }
+
         if (calories > 0 && calories < 50 && protein > 0) {
             baseScore += 3;
             macroMessage += "Nutrient-dense & low calorie (+3). ";
         } else if (carbRatio < 0.2) {
             baseScore += 1;
-            macroMessage += "Low carbs (+1). ";
+            macroMessage += "Low net carbs (+1). ";
         } else if (carbRatio > 0.6) {
             baseScore -= 1;
-            macroMessage += "High carbs (-1). ";
+            macroMessage += "High net carbs (-1). ";
         }
 
         const hasSugar = ingredientsText.includes("sugar") || ingredientsText.includes("syrup");
@@ -245,5 +264,74 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Don't reset inputs, allow user to tweak them
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function fetchProduct(barcode) {
+        if (!barcode) {
+            barcodeStatus.innerText = "Please enter a barcode.";
+            return;
+        }
+        barcodeStatus.innerText = "Fetching...";
+        barcodeStatus.style.color = "var(--text-muted)";
+        
+        try {
+            const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+            const data = await res.json();
+            
+            if (data.status === 1) {
+                const p = data.product;
+                const nut = p.nutriments || {};
+                
+                document.getElementById('calories').value = nut['energy-kcal_100g'] || nut['energy-kcal_serving'] || 0;
+                document.getElementById('protein').value = nut['proteins_100g'] || nut['proteins_serving'] || 0;
+                document.getElementById('carbs').value = nut['carbohydrates_100g'] || nut['carbohydrates_serving'] || 0;
+                document.getElementById('fiber').value = nut['fiber_100g'] || nut['fiber_serving'] || 0;
+                document.getElementById('fat').value = nut['fat_100g'] || nut['fat_serving'] || 0;
+                
+                document.getElementById('ingredients').value = p.ingredients_text_en || p.ingredients_text || "";
+                
+                barcodeStatus.innerText = `Found: ${p.product_name || 'Unknown Product'}`;
+                barcodeStatus.style.color = "var(--accent-color)";
+                
+                // Auto calculate
+                calculateScore();
+            } else {
+                barcodeStatus.innerText = "Product not found. Please enter manually.";
+                barcodeStatus.style.color = "var(--warning-color)";
+            }
+        } catch (err) {
+            barcodeStatus.innerText = "Error fetching product.";
+            barcodeStatus.style.color = "var(--danger-color)";
+        }
+    }
+
+    function toggleScanner() {
+        const readerDiv = document.getElementById('reader');
+        if (readerDiv.style.display === 'block') {
+            readerDiv.style.display = 'none';
+            if (html5QrCode) {
+                html5QrCode.stop().catch(err => console.log(err));
+            }
+        } else {
+            readerDiv.style.display = 'block';
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                (decodedText, decodedResult) => {
+                    document.getElementById('barcode-input').value = decodedText;
+                    toggleScanner(); // stop scanner
+                    fetchProduct(decodedText);
+                },
+                (errorMessage) => {
+                    // parse error, ignore
+                }
+            ).catch((err) => {
+                barcodeStatus.innerText = "Camera access denied or error.";
+                barcodeStatus.style.color = "var(--danger-color)";
+            });
+        }
     }
 });

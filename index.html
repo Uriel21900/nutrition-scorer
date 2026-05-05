@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <div class="background-shapes">
@@ -25,6 +26,21 @@
 
         <div class="app-layout">
             <div class="input-panel glass-panel">
+                <div class="barcode-section">
+                    <h2>Scan Product</h2>
+                    <div id="reader" style="width: 100%; display: none; margin-bottom: 1rem; border-radius: 12px; overflow: hidden;"></div>
+                    <div class="barcode-input-row">
+                        <input type="text" id="barcode-input" placeholder="Enter barcode number...">
+                        <button id="scan-btn" class="secondary-btn small-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M20 7V4h-3"></path><path d="M4 17v3h3"></path><path d="M20 17v3h-3"></path><path d="M8 12h8"></path></svg>
+                        </button>
+                    </div>
+                    <button id="lookup-btn" class="secondary-btn" style="margin-top: 0.5rem;">Fetch Details</button>
+                    <p id="barcode-status" class="status-text"></p>
+                </div>
+
+                <hr class="divider">
+
                 <h2>Nutrition Facts</h2>
                 
                 <div class="input-group">
@@ -40,6 +56,10 @@
                     <div class="input-group">
                         <label for="carbs">Carbs (g)</label>
                         <input type="number" id="carbs" placeholder="0" min="0" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="fiber">Fiber (g)</label>
+                        <input type="number" id="fiber" placeholder="0" min="0" required>
                     </div>
                     <div class="input-group">
                         <label for="fat">Fat (g)</label>

@@ -187,7 +187,7 @@ textarea:focus {
 
 .macros-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
 }
 
@@ -371,4 +371,39 @@ button {
 
 .animate-slide-in {
     animation: slideIn 0.5s ease forwards;
+}
+
+/* Barcode Section Styles */
+.barcode-section {
+    margin-bottom: 2rem;
+}
+
+.barcode-input-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.barcode-input-row input {
+    flex: 1;
+}
+
+.small-btn {
+    width: auto;
+    padding: 0 1.2rem;
+    margin-top: 0;
+}
+
+.status-text {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    text-align: center;
+    min-height: 1.2em;
+}
+
+.divider {
+    border: none;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 2rem 0;
 }
