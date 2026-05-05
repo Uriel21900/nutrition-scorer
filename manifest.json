@@ -105,21 +105,17 @@
   "note_taking": {
     "new_note_url": "./?action=note"
   },
-  "widgets": [
-    {
-      "name": "Nutrition Stats",
-      "description": "Quick view of your stats",
-      "tag": "stats",
-      "ms_ac_template": "./widget.json",
-      "data": "./widget-data.json",
-      "type": "application/json"
-    }
-  ],
-  "scope_extensions": [
-    {
-      "origin": "https://world.openfoodfacts.org"
-    }
-  ],
+  "widgets": {
+    "name": "Nutrition Stats",
+    "description": "Quick view of your stats",
+    "tag": "stats",
+    "ms_ac_template": "./widget.json",
+    "data": "./widget-data.json",
+    "type": "application/json"
+  },
+  "scope_extensions": {
+    "origin": "https://world.openfoodfacts.org"
+  },
   "tab_strip": {
     "home_tab": {
       "icons": [{"src": "icon-192.png", "sizes": "192x192"}],
