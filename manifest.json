@@ -1,24 +1,33 @@
 {
-  "id": "/?source=pwa",
+  "id": "/nutrition-scorer/",
   "name": "NutriScore",
   "short_name": "NutriScore",
   "description": "Smart Nutrition Analyzer",
   "start_url": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#0f172a",
   "theme_color": "#3b82f6",
   "orientation": "portrait",
-  "categories": ["health", "fitness", "lifestyle"],
+  "categories": ["health", "fitness", "lifestyle", "food"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "./",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "e84b072d-253a-445e-a322-0a12050119b4",
   "icons": [
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
@@ -45,6 +54,46 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan Barcode",
+      "short_name": "Scan",
+      "description": "Scan a new food product",
+      "url": "./?action=scan",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+nutriscore",
+      "url": "./?barcode=%s"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "share_target": {
+    "action": "./",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"]
+      }
     }
   ]
 }
