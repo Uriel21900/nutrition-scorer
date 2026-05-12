@@ -4,37 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsPanel = document.getElementById('results-panel');
     const inputPanel = document.querySelector('.input-panel');
 
-    // Bad and Unhealthy ingredient lists (lowercase for matching)
     const BAD_INGREDIENTS = [
-        'high fructose corn syrup',
-        'hydrogenated', // captures hydrogenated oils/trans fats
-        'aspartame',
-        'sucralose',
-        'saccharin',
-        'red 40',
-        'yellow 5',
-        'yellow 6',
-        'blue 1',
-        'bha',
-        'bht',
-        'sodium nitrate',
-        'sodium nitrite',
-        'potassium bromate',
-        'titanium dioxide'
+        'high fructose corn syrup', 'hydrogenated', 'aspartame', 'sucralose', 
+        'saccharin', 'red 40', 'yellow 5', 'yellow 6', 'blue 1', 'bha', 'bht', 
+        'sodium nitrate', 'sodium nitrite', 'potassium bromate', 'titanium dioxide'
     ];
 
     const UNHEALTHY_INGREDIENTS = [
-        'added sugar',
-        'cane sugar',
-        'sugar',
-        'palm oil',
-        'enriched flour',
-        'refined wheat',
-        'maltodextrin',
-        'dextrose',
-        'soybean oil',
-        'canola oil',
-        'corn syrup'
+        'added sugar', 'cane sugar', 'sugar', 'palm oil', 'enriched flour', 
+        'refined wheat', 'maltodextrin', 'dextrose', 'soybean oil', 'canola oil', 
+        'corn syrup', 'artificial flavor'
     ];
 
     const lookupBtn = document.getElementById('lookup-btn');
@@ -49,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     scanBtn.addEventListener('click', toggleScanner);
 
     function calculateScore() {
-        // 1. Get Inputs
         const calories = parseFloat(document.getElementById('calories').value);
         const protein = parseFloat(document.getElementById('protein').value);
         const carbs = parseFloat(document.getElementById('carbs').value);
@@ -62,100 +40,135 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let badPenalty = 0;
-        let unhealthyPenalty = 0;
-
-        // 2. Macro Calculation
         const netCarbs = Math.max(0, carbs - fiber);
         const calculatedCalories = (protein * 4) + (netCarbs * 4) + (fat * 9);
         const effectiveCalories = Math.max(calories, calculatedCalories, 1);
         
-        let baseScore = 5;
-        let macroMessage = "";
+        let scoreLog = [];
+        let baseScore = 5.0;
+        scoreLog.push({ msg: 'Baseline Score', val: 5.0 });
 
         const proteinRatio = (protein * 4) / effectiveCalories;
         const carbRatio = (netCarbs * 4) / effectiveCalories;
 
-        if (proteinRatio >= 0.3) {
-            baseScore += 4;
-            macroMessage += "Excellent protein (+4). ";
-        } else if (proteinRatio >= 0.15) {
-            baseScore += 2;
-            macroMessage += "Good protein (+2). ";
-        } else {
-            macroMessage += "Low protein (+0). ";
+        // Trivial Calories Bypass
+        let bypassCarbs = false;
+        if (calories < 30 && carbs < 5) {
+            bypassCarbs = true;
+            baseScore += 2.0;
+            scoreLog.push({ msg: 'Very low calorie product', val: 2.0 });
         }
 
-        // Reward Fiber
-        if (fiber > 5) {
-            baseScore += 2;
-            macroMessage += "High fiber (+2). ";
-        } else if (fiber >= 3) {
-            baseScore += 1;
-            macroMessage += "Good fiber (+1). ";
+        // Single Ingredient / Healthy Fat Bonus (Graza EVOO)
+        if (proteinRatio === 0 && carbRatio === 0 && fat > 0) {
+            if (ingredientsText.includes('extra virgin olive oil') || ingredientsText.includes('avocado oil') || ingredientsText.includes('coconut oil')) {
+                baseScore += 3.5;
+                scoreLog.push({ msg: 'Single-ingredient healthy superfood fat', val: 3.5 });
+            } else if (ingredientsText.includes('olive oil')) {
+                baseScore += 2.0;
+                scoreLog.push({ msg: 'Heart-healthy fat base', val: 2.0 });
+            } else {
+                baseScore += 1.0;
+                scoreLog.push({ msg: 'Zero glycemic impact (all fat)', val: 1.0 });
+            }
         }
 
-        if (calories > 0 && calories < 50 && protein > 0) {
-            baseScore += 3;
-            macroMessage += "Nutrient-dense & low calorie (+3). ";
-        } else if (carbRatio < 0.2) {
-            baseScore += 1;
-            macroMessage += "Low net carbs (+1). ";
-        } else if (carbRatio > 0.6) {
-            baseScore -= 1;
-            macroMessage += "High net carbs (-1). ";
+        // Protein Scoring
+        if (proteinRatio >= 0.6) {
+            baseScore += 4.0;
+            scoreLog.push({ msg: 'Exceptional lean protein density', val: 4.0 });
+        } else if (proteinRatio >= 0.4) {
+            baseScore += 3.5;
+            scoreLog.push({ msg: 'Excellent protein-to-calorie ratio', val: 3.5 });
+        } else if (proteinRatio >= 0.2) {
+            baseScore += 2.0;
+            scoreLog.push({ msg: 'Great protein source', val: 2.0 });
+        } else if (proteinRatio >= 0.1) {
+            baseScore += 1.0;
+            scoreLog.push({ msg: 'Some protein', val: 1.0 });
         }
 
-        const hasSugar = ingredientsText.includes("sugar") || ingredientsText.includes("syrup");
-        if (carbRatio > 0.4 && hasSugar) {
-            baseScore -= 2;
-            macroMessage += "High simple carbs/sugar (-2). ";
+        // Fiber Scoring
+        const fiberPer100Cal = (fiber / effectiveCalories) * 100;
+        if (fiberPer100Cal >= 3) {
+            baseScore += 2.0;
+            scoreLog.push({ msg: 'Excellent fiber content', val: 2.0 });
+        } else if (fiberPer100Cal >= 1.5) {
+            baseScore += 1.0;
+            scoreLog.push({ msg: 'Good fiber content', val: 1.0 });
+        } else if (fiberPer100Cal < 0.5 && carbRatio > 0.5 && !bypassCarbs) {
+            baseScore -= 0.5;
+            scoreLog.push({ msg: 'High carbohydrates with almost no fiber', val: -0.5 });
         }
 
-        baseScore = Math.max(1, Math.min(10, baseScore));
-        let currentScore = baseScore;
+        // Natural Sweets / Fruits
+        if (ingredientsText.includes('stevia') || ingredientsText.includes('erythritol') || ingredientsText.includes('monk fruit')) {
+            baseScore += 1.5;
+            scoreLog.push({ msg: 'Uses natural, non-glycemic sweetener', val: 1.5 });
+        }
+        if (ingredientsText.includes('orange') || ingredientsText.includes('apple') || ingredientsText.includes('spinach') || ingredientsText.includes('kale') || ingredientsText.includes('fruit')) {
+            baseScore += 2.0;
+            scoreLog.push({ msg: 'Natural whole food/fruit base', val: 2.0 });
+        }
+        if (ingredientsText.includes('cheese')) {
+            baseScore += 0.5;
+            scoreLog.push({ msg: 'Contains real cheese/dairy', val: 0.5 });
+        }
 
-        let macroColor = baseScore >= 8 ? 'accent' : (baseScore >= 5 ? 'warning' : 'danger');
-        let macroBarWidth = `${(baseScore / 10) * 100}%`;
+        // Carb & Sugar Penalties
+        if (!bypassCarbs) {
+            if (carbRatio > 0.7) {
+                baseScore -= 1.5;
+                scoreLog.push({ msg: 'Extremely high proportion of carbohydrates', val: -1.5 });
+            } else if (carbRatio > 0.5) {
+                baseScore -= 1.0;
+                scoreLog.push({ msg: 'High carbohydrate ratio', val: -1.0 });
+            }
 
-        // 3. Ingredients Scanning
+            const hasSugar = ingredientsText.includes("sugar") || ingredientsText.includes("syrup") || ingredientsText.includes("dextrose") || ingredientsText.includes("maltodextrin");
+            if (carbRatio > 0.4 && hasSugar) {
+                baseScore -= 1.5;
+                scoreLog.push({ msg: 'High carbs mostly from refined sugars', val: -1.5 });
+            }
+        }
+
+        // Ingredients Scanning
+        let badPenalty = 0;
+        let unhealthyPenalty = 0;
         const foundBad = [];
         const foundUnhealthy = [];
 
-        // Check Bad Ingredients
         BAD_INGREDIENTS.forEach(ingredient => {
             if (ingredientsText.includes(ingredient)) {
                 foundBad.push(ingredient);
-                badPenalty += 2;
+                badPenalty += 1.5;
+                scoreLog.push({ msg: `Hazardous ingredient: ${ingredient}`, val: -1.5 });
             }
         });
 
-        // Check Unhealthy Ingredients (Make sure we don't double count e.g. "high fructose corn syrup" and "corn syrup")
         UNHEALTHY_INGREDIENTS.forEach(ingredient => {
-            // Only add if it's not a substring of an already found bad ingredient
             const isSubStringOfBad = foundBad.some(bad => bad.includes(ingredient));
             if (!isSubStringOfBad && ingredientsText.includes(ingredient)) {
                 foundUnhealthy.push(ingredient);
-                unhealthyPenalty += 1;
+                unhealthyPenalty += 1.0;
+                scoreLog.push({ msg: `Unhealthy ingredient: ${ingredient}`, val: -1.0 });
             }
         });
 
-        currentScore -= (badPenalty + unhealthyPenalty);
+        baseScore -= (badPenalty + unhealthyPenalty);
         
-        // Clamp score between 1 and 10
-        const finalScore = Math.max(1, Math.min(10, currentScore));
+        let finalScore = Math.max(1.0, Math.min(10.0, baseScore));
+        finalScore = Math.round(finalScore * 10) / 10; // Round to 1 decimal place
 
-        // 4. Update UI
-        updateUI(finalScore, baseScore, macroMessage, macroColor, macroBarWidth, foundBad, foundUnhealthy, badPenalty, unhealthyPenalty);
+        // Update UI
+        updateUI(finalScore, scoreLog);
     }
 
-    function updateUI(score, baseScore, macroMessage, macroColor, macroBarWidth, badList, unhealthyList, badPenalty, unhealthyPenalty) {
-        // Hide input, show results
+    function updateUI(score, scoreLog) {
         inputPanel.style.display = 'none';
         resultsPanel.style.display = 'block';
         resultsPanel.classList.add('animate-slide-in');
 
-        // Update Score Circle
         const scoreElement = document.getElementById('final-score');
         const scoreCircle = document.querySelector('.score-circle');
         const messageElement = document.getElementById('score-message');
@@ -173,16 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentCount = score;
                 clearInterval(counter);
             }
-            scoreElement.innerText = Math.round(currentCount);
+            scoreElement.innerText = currentCount.toFixed(1);
         }, interval);
 
-        // Determine colors based on final score
         let mainColor = '';
-        if (score >= 8) {
+        if (score >= 8.0) {
             mainColor = 'var(--accent-color)';
             messageElement.innerText = 'Great Choice! Very Healthy.';
             messageElement.style.color = mainColor;
-        } else if (score >= 5) {
+        } else if (score >= 5.0) {
             mainColor = 'var(--warning-color)';
             messageElement.innerText = 'Moderate. Consume in moderation.';
             messageElement.style.color = mainColor;
@@ -192,77 +204,44 @@ document.addEventListener('DOMContentLoaded', () => {
             messageElement.style.color = mainColor;
         }
 
-        // Set conic gradient for score circle
-        const percentage = (score / 10) * 100;
+        const percentage = (score / 10.0) * 100;
         setTimeout(() => {
             scoreCircle.style.background = `conic-gradient(${mainColor} ${percentage}%, rgba(255,255,255,0.05) 0%)`;
             scoreCircle.style.boxShadow = `inset 0 0 20px rgba(0,0,0,0.5), 0 0 30px ${mainColor}40`;
         }, 100);
 
-        // Update Macro Section
-        const macroScoreBadge = document.getElementById('macro-score');
-        const macroDetails = document.getElementById('macro-details');
+        // Update Macro Bar
         const macroBar = document.getElementById('macro-bar');
+        macroBar.style.width = `${percentage}%`;
+        macroBar.style.backgroundColor = mainColor;
 
-        macroScoreBadge.innerText = `Macro Base: ${baseScore}/10`;
-        macroScoreBadge.className = `badge ${macroColor}`;
-        macroDetails.innerText = macroMessage;
+        // Render Breakdown List
+        const breakdownList = document.getElementById('breakdown-list');
+        breakdownList.innerHTML = '';
         
-        let barColor = 'var(--primary-color)';
-        if(macroColor === 'danger') barColor = 'var(--danger-color)';
-        if(macroColor === 'warning') barColor = 'var(--warning-color)';
-        if(macroColor === 'accent') barColor = 'var(--accent-color)';
-        
-        macroBar.style.width = '0%';
-        macroBar.style.backgroundColor = barColor;
-        setTimeout(() => { macroBar.style.width = macroBarWidth; }, 500);
-
-        // Update Ingredients Lists
-        const badContainer = document.getElementById('bad-ingredients-container');
-        const badUl = document.getElementById('bad-list');
-        const badScoreBadge = document.getElementById('bad-score');
-
-        const unhealthyContainer = document.getElementById('unhealthy-ingredients-container');
-        const unhealthyUl = document.getElementById('unhealthy-list');
-        const unhealthyScoreBadge = document.getElementById('unhealthy-score');
-
-        badUl.innerHTML = '';
-        if (badList.length > 0) {
-            badContainer.style.display = 'block';
-            badScoreBadge.innerText = `-${badPenalty} pts`;
-            badList.forEach(item => {
-                const li = document.createElement('li');
-                li.innerText = item.charAt(0).toUpperCase() + item.slice(1);
-                badUl.appendChild(li);
-            });
-        } else {
-            badContainer.style.display = 'none';
-        }
-
-        unhealthyUl.innerHTML = '';
-        if (unhealthyList.length > 0) {
-            unhealthyContainer.style.display = 'block';
-            unhealthyUl.className = 'ingredient-list warning';
-            unhealthyScoreBadge.innerText = `-${unhealthyPenalty} pts`;
-            unhealthyList.forEach(item => {
-                const li = document.createElement('li');
-                li.innerText = item.charAt(0).toUpperCase() + item.slice(1);
-                unhealthyUl.appendChild(li);
-            });
-        } else {
-            unhealthyContainer.style.display = 'none';
-        }
+        scoreLog.forEach(log => {
+            const li = document.createElement('li');
+            const cls = log.val > 0 ? 'positive' : (log.val < 0 ? 'negative' : 'neutral');
+            li.className = cls;
+            
+            const msgSpan = document.createElement('span');
+            msgSpan.innerText = log.msg;
+            
+            const valSpan = document.createElement('span');
+            valSpan.style.fontWeight = 'bold';
+            valSpan.innerText = log.val > 0 ? `+${log.val}` : `${log.val}`;
+            
+            li.appendChild(msgSpan);
+            li.appendChild(valSpan);
+            breakdownList.appendChild(li);
+        });
     }
 
     function resetApp() {
         resultsPanel.style.display = 'none';
         inputPanel.style.display = 'block';
-        
-        // Reset score circle
         const scoreCircle = document.querySelector('.score-circle');
         scoreCircle.style.background = `conic-gradient(var(--accent-color) 0%, transparent 0%)`;
-        
-        // Don't reset inputs, allow user to tweak them
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -293,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 barcodeStatus.innerText = `Found: ${p.product_name || 'Unknown Product'}`;
                 barcodeStatus.style.color = "var(--accent-color)";
                 
-                // Auto calculate
                 calculateScore();
             } else {
                 barcodeStatus.innerText = "Product not found. Please enter manually.";
@@ -322,11 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 { fps: 10, qrbox: { width: 250, height: 150 } },
                 (decodedText, decodedResult) => {
                     document.getElementById('barcode-input').value = decodedText;
-                    toggleScanner(); // stop scanner
+                    toggleScanner(); 
                     fetchProduct(decodedText);
                 },
                 (errorMessage) => {
-                    // parse error, ignore
                 }
             ).catch((err) => {
                 barcodeStatus.innerText = "Camera access denied or error.";

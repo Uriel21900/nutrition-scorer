@@ -99,27 +99,17 @@
                             <span>Macro & Calorie Check</span>
                             <span id="macro-score" class="badge neutral">Base: 10</span>
                         </div>
-                        <p id="macro-details" class="details-text"></p>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar macro-bar" id="macro-bar"></div>
-                        </div>
+                        <div class="score-details glass-panel">
+                    <h3>Macro Balance</h3>
+                    <div class="macro-bar-container">
+                        <div id="macro-bar" class="macro-bar"></div>
                     </div>
+                </div>
 
-                    <div class="breakdown-item" id="bad-ingredients-container">
-                        <div class="breakdown-header">
-                            <span>Dangerous/Bad Ingredients</span>
-                            <span id="bad-score" class="badge danger">0</span>
-                        </div>
-                        <ul id="bad-list" class="ingredient-list"></ul>
-                    </div>
-
-                    <div class="breakdown-item" id="unhealthy-ingredients-container">
-                        <div class="breakdown-header">
-                            <span>Unhealthy Ingredients</span>
-                            <span id="unhealthy-score" class="badge warning">0</span>
-                        </div>
-                        <ul id="unhealthy-list" class="ingredient-list"></ul>
-                    </div>
+                <div id="breakdown-panel" class="score-details glass-panel">
+                    <h3>Score Breakdown</h3>
+                    <ul id="breakdown-list" class="breakdown-list"></ul>
+                </div>
                 </div>
                 
                 <button id="reset-btn" class="secondary-btn">New Calculation</button>

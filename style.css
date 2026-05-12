@@ -344,7 +344,34 @@ button {
     color: var(--text-muted);
 }
 
-.ingredient-list li {
+.breakdown-list {
+    list-style: none;
+    text-align: left;
+    margin-top: 1rem;
+}
+
+.breakdown-list li {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.breakdown-list li.positive {
+    border-left: 4px solid var(--accent-color);
+}
+
+.breakdown-list li.negative {
+    border-left: 4px solid var(--danger-color);
+}
+
+.breakdown-list li.neutral {
+    border-left: 4px solid var(--text-muted);
+}
     padding: 0.4rem 0;
     display: flex;
     align-items: center;
