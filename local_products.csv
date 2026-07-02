@@ -1,0 +1,7 @@
+barcode,product_name,energy_100g,proteins_100g,carbohydrates_100g,sugars_100g,fat_100g,fiber_100g,ingredients_text
+100001,Mystery Snack,999999,5.0,20.0,15.0,10.0,,sugar enriched flour
+100002,Diet Water,0,0,0,0,0,0,water artificial flavor
+100003,Protein Bar,1500,20.0,25.0,2.0,8.0,5.0,whey protein isolate nuts
+100003,Protein Bar,1500,20.0,25.0,2.0,8.0,5.0,whey protein isolate nuts
+100004,Missing Data Cake,,,,,12.0,1.0,flour butter sugar
+100005,Super Fat Oil,3700,0.0,0.0,0.0,150.0,0.0,extra virgin olive oil
