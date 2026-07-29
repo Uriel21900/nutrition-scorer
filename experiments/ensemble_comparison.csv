@@ -1,0 +1,5 @@
+Model Name,CV RMSE (Mean),Test RMSE,Test MAE,Test R2,Grade Acc (%),Grade Macro-F1,Train Time (ms),Model Size (KB)
+Base: HistGradientBoosting (Tuned),0.6318,0.6225,0.4676,0.9471,75.9,0.7204,1766.22,1052.63
+Ensemble: StackingRegressor (RidgeCV Meta),0.6051,0.6226,0.4595,0.9471,75.8,0.7206,15132.33,24090.75
+Ensemble: VotingRegressor (4-Model Avg),0.6461,0.6632,0.5061,0.94,74.7,0.7078,2374.09,24090.28
+Base: RandomForest (Tuned),0.6974,0.7112,0.5286,0.931,72.3,0.6805,291.02,22760.31

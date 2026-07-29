@@ -1,0 +1,25 @@
+{
+    "HistGradientBoostingRegressor": {
+        "params": {
+            "hgb__min_samples_leaf": 15,
+            "hgb__max_iter": 300,
+            "hgb__max_depth": null,
+            "hgb__learning_rate": 0.05,
+            "hgb__l2_regularization": 0.0
+        },
+        "cv_rmse": 0.6379,
+        "test_rmse": 0.6306,
+        "test_r2": 0.9468
+    },
+    "RandomForestRegressor": {
+        "params": {
+            "rf__n_estimators": 180,
+            "rf__min_samples_split": 5,
+            "rf__max_features": 1.0,
+            "rf__max_depth": 20
+        },
+        "cv_rmse": 0.7009,
+        "test_rmse": 0.6826,
+        "test_r2": 0.9376
+    }
+}

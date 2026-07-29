@@ -1,0 +1,4 @@
+Model,Loss Function,Test RMSE,Test MAE,Test R2,Train Time (ms)
+HistGradientBoosting,MSE (Squared Error),0.6333,0.4745,0.9453,160.22
+HistGradientBoosting,MAE (Absolute Error),0.65,0.4808,0.9424,234.26
+HistGradientBoosting,Poisson Deviance,0.6613,0.4779,0.9404,158.56
