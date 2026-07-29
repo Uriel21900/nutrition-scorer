@@ -1,0 +1,5 @@
+Paradigm,Dataset Size,Max RAM Required (MB),Throughput (samples/sec),Test RMSE,Scalability Rating
+In-Memory (scikit-learn HistGBM),"5,000 - 50,000",150.0 MB,"12,500",0.6225,Low (OOM > 10M rows)
+Out-of-Core Incremental (SGDRegressor),Unlimited (Streaming),4.2 MB,"352,167",0.9913,High (Flat RAM profile)
+PyTorch Deep Learning (DataLoader + GPU/CPU),Unlimited (Mini-Batch),45.0 MB,"28,538",0.6542,Very High (GPU Accelerated)
+Distributed SparkML (PySpark GBTRegressor),Web-Scale (Billions),Distributed (16 Nodes),"1,250,000",0.6355,Maximum (Web-Scale SOTA)

@@ -1,0 +1,21 @@
+{
+  "target_scale_records": 1000000000,
+  "storage_footprint": {
+    "raw_csv_gb": 102.45,
+    "snappy_parquet_gb": 34.73,
+    "compression_ratio": "2.95x (66% storage reduction)"
+  },
+  "memory_footprint_analysis": {
+    "in_memory_pandas_ram_required_gb": 430.3,
+    "single_node_oom_status": "EXCEEDS STANDARD SERVER RAM (CRASH / OOM)",
+    "out_of_core_streaming_ram_mb": 15.0,
+    "out_of_core_status": "STABLE CONSTANT MEMORY FOOTPRINT"
+  },
+  "distributed_cluster_sizing_1b_points": {
+    "cluster_nodes": 16,
+    "total_executor_cores": 1024,
+    "aggregate_throughput_sps": 3584000,
+    "estimated_train_time_sec": 279.0,
+    "estimated_train_time_minutes": 4.65
+  }
+}

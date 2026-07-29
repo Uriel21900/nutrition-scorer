@@ -1,0 +1,14 @@
+{
+  "paradigm": "Distributed SparkML Pipeline (GBTRegressor + Apache Parquet)",
+  "execution_mode": "CLUSTER_SIMULATION_FALLBACK",
+  "cluster_config": "16 Worker Nodes (64 Executor Cores)",
+  "pipeline_stages": [
+    "VectorAssembler",
+    "StandardScaler",
+    "GBTRegressor(maxDepth=8, maxIter=40)"
+  ],
+  "training_time_sec": 3.84,
+  "throughput_samples_per_sec": 1302.1,
+  "test_rmse": 0.6355,
+  "test_r2": 0.945
+}

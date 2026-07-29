@@ -1,0 +1,17 @@
+{
+  "paradigm": "Out-of-Core Incremental Streaming (SGDRegressor + Parquet)",
+  "storage_metrics": {
+    "csv_size_bytes": 555241,
+    "parquet_size_bytes": 188200,
+    "compression_ratio": 2.95,
+    "savings_percentage": 66.1
+  },
+  "total_samples_processed": 75000,
+  "epochs": 15,
+  "training_time_sec": 0.213,
+  "throughput_samples_per_sec": 352167.4,
+  "test_rmse": 0.9913,
+  "test_r2": 0.8685,
+  "memory_in_memory_mb": 1.5,
+  "memory_out_of_core_mb": 4.18
+}
