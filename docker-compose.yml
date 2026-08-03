@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  nutriscore-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nutriscore-api:latest
+    container_name: nutriscore-api-prod
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - FLASK_ENV=production
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - ./experiments:/app/experiments:ro
+      - ./data:/app/data:ro

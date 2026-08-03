@@ -1,0 +1,3 @@
+"""
+NutriScore Automated Test Suite
+"""

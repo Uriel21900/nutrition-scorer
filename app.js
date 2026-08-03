@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lookupBtn.addEventListener('click', () => fetchProduct(barcodeInput.value));
     scanBtn.addEventListener('click', toggleScanner);
 
-    function calculateScore() {
+    async function calculateScore() {
         const calories = parseFloat(document.getElementById('calories').value);
         const protein = parseFloat(document.getElementById('protein').value);
         const carbs = parseFloat(document.getElementById('carbs').value);
@@ -38,6 +38,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(calories) || isNaN(protein) || isNaN(carbs) || isNaN(fat)) {
             alert("Please enter valid numbers for core nutrition facts.");
             return;
+        }
+
+        try {
+            const apiRes = await fetch('/api/v1/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    calories,
+                    protein_g: protein,
+                    carbs_g: carbs,
+                    fiber_g: fiber,
+                    fat_g: fat,
+                    ingredients: ingredientsText
+                })
+            });
+            if (apiRes.ok) {
+                const data = await apiRes.json();
+                if (data.success && data.score) {
+                    const scoreLog = [];
+                    scoreLog.push({ msg: `ML Engine: ${data.model_used || 'StackingRegressor'} (Grade: ${data.grade || 'A'})`, val: data.score });
+                    if (data.insights && data.insights.positive_factors) {
+                        data.insights.positive_factors.forEach(f => scoreLog.push({ msg: f, val: 1.0 }));
+                    }
+                    if (data.insights && data.insights.negative_factors) {
+                        data.insights.negative_factors.forEach(f => scoreLog.push({ msg: f, val: -1.0 }));
+                    }
+                    updateUI(data.score, scoreLog);
+                    return;
+                }
+            }
+        } catch (e) {
+            console.log("REST API offline or static fallback; using client-side heuristic engine.");
         }
 
         const netCarbs = Math.max(0, carbs - fiber);
@@ -252,6 +284,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         barcodeStatus.innerText = "Fetching...";
         barcodeStatus.style.color = "var(--text-muted)";
+
+        try {
+            const apiRes = await fetch(`/api/v1/barcode/${barcode}`);
+            if (apiRes.ok) {
+                const data = await apiRes.json();
+                if (data.success && data.product_metadata) {
+                    const meta = data.product_metadata;
+                    const feat = data.features_analyzed || {};
+                    document.getElementById('calories').value = feat.calories || 0;
+                    document.getElementById('protein').value = feat.protein_g || 0;
+                    document.getElementById('carbs').value = feat.carbs_g || 0;
+                    document.getElementById('fiber').value = feat.fiber_g || 0;
+                    document.getElementById('fat').value = feat.fat_g || 0;
+                    document.getElementById('ingredients').value = feat.ingredients || "";
+
+                    barcodeStatus.innerText = `Found via ML API: ${meta.name || 'Unknown Product'} (Grade: ${data.grade || 'A'})`;
+                    barcodeStatus.style.color = "var(--accent-color)";
+                    calculateScore();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.log("ML barcode API offline or static fallback; trying direct Open Food Facts.");
+        }
         
         try {
             const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);

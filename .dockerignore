@@ -1,0 +1,14 @@
+# Docker build exclusion list
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+tests/
+notebooks/
+plots/
+*.md
+!README.md
+*.pdf
